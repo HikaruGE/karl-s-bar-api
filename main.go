@@ -1,8 +1,8 @@
 package main
 
 import (
-	"karl-s-bar-api/data"
 	"karl-s-bar-api/handlers"
+	"karl-s-bar-api/repository"
 
 	"github.com/gin-gonic/gin"
 )
@@ -22,9 +22,15 @@ func main() {
 		c.Next()
 	})
 
+	db := repository.ConnectDB()
+
+	cocktailRepo := &repository.CocktailRepo{
+		MC: db,
+	}
+
 	healthCheckHandler := &handlers.HealthCheckHandler{}
 	cocktailHandler := &handlers.CocktailHandler{
-		CocktailGetter: &data.CocktailGetterImpl{},
+		CocktailGetter: cocktailRepo,
 	}
 
 	r.GET("/cheers", healthCheckHandler.HealthCheck)

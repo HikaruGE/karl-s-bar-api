@@ -13,15 +13,7 @@ type CocktailHandler struct {
 
 type CocktailGetter interface {
 	GetCocktails() ([]models.Cocktail, error)
-	GetCocktailByID(id string) (models.Cocktail, error)
-}
-
-func (h *CocktailHandler) GetCocktails(getter CocktailGetter) ([]models.Cocktail, error) {
-	return getter.GetCocktails()
-}
-
-func (h *CocktailHandler) GetCocktailByID(getter CocktailGetter, id string) (models.Cocktail, error) {
-	return getter.GetCocktailByID(id)
+	GetCocktailByID(id string) (*models.Cocktail, error)
 }
 
 func (h *CocktailHandler) GetCocktailsHandler(c *gin.Context) {
