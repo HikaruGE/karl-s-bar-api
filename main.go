@@ -27,15 +27,21 @@ func main() {
 	cocktailRepo := &repository.CocktailRepo{
 		MC: db,
 	}
+	userRepo := &repository.UserRepository{
+		MC: db,
+	}
 
 	healthCheckHandler := &handlers.HealthCheckHandler{}
 	cocktailHandler := &handlers.CocktailHandler{
 		CocktailGetter: cocktailRepo,
 	}
+	authHandler := &handlers.AuthHandler{UserRepository: userRepo}
 
 	r.GET("/cheers", healthCheckHandler.HealthCheck)
 	r.GET("/cocktails", cocktailHandler.GetCocktailsHandler)
 	r.GET("/cocktails/:id", cocktailHandler.GetCocktailByIDHandler)
 
+	r.POST("/auth/register", authHandler.Register)
+	
 	r.Run(":9527")
 }
