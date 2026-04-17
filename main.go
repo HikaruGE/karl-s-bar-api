@@ -28,7 +28,7 @@ func main() {
 		Collection: db.Collection("cocktail_recipes"),
 	}
 	userRepo := &repository.UserRepositoryMongo{
-		Collection: db.Collection("cocktail_recipes"),
+		Collection: db.Collection("users"),
 	}
 
 	healthCheckHandler := &handlers.HealthCheckHandler{}
@@ -42,6 +42,7 @@ func main() {
 	r.GET("/cocktails/:id", cocktailHandler.GetCocktailByIDHandler)
 
 	r.POST("/auth/register", authHandler.Register)
-	
+	r.POST("/auth/login", authHandler.Login)
+
 	r.Run(":9527")
 }
