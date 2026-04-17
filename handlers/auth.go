@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"karl-s-bar-api/models"
+	"karl-s-bar-api/repository"
 	"net/http"
 	"strings"
 	"time"
@@ -18,12 +19,7 @@ type RegisterRequest struct {
 }
 
 type AuthHandler struct {  
-    UserRepository UserRepository
-}
-
-type UserRepository interface {
-    GetUserByEmail(email string) (*models.User, error)
-    InsertUser(user *models.User) error
+    UserRepository repository.UserRepository
 }
 
 func (h *AuthHandler) Register(c *gin.Context) {

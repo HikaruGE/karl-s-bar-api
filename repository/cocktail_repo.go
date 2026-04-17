@@ -10,17 +10,20 @@ import (
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
-type CocktailRepo struct {
-	MC *mongo.Database
+type CocktailRepository interface {
+	GetCocktails() ([]models.Cocktail, error)
+	GetCocktailByID(id string) (*models.Cocktail, error)
 }
 
-func (m *CocktailRepo) GetCocktails() ([]models.Cocktail, error) {
+type CocktailRepositoryMongo struct {
+	Collection *mongo.Collection
+}
+
+func (m *CocktailRepositoryMongo) GetCocktails() ([]models.Cocktail, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	collection := m.MC.Collection("cocktail_recipes")
-
-	cursor, err := collection.Find(ctx, bson.M{})
+	cursor, err := m.Collection.Find(ctx, bson.M{})
 	if err != nil {
 		log.Fatal(err)
 		return nil, err
@@ -36,14 +39,12 @@ func (m *CocktailRepo) GetCocktails() ([]models.Cocktail, error) {
 	return cocktails, nil
 }
 
-func (m *CocktailRepo) GetCocktailByID(id string) (*models.Cocktail, error) {
+func (m *CocktailRepositoryMongo) GetCocktailByID(id string) (*models.Cocktail, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	collection := m.MC.Collection("cocktail_recipes")
-
 	var cocktail *models.Cocktail
-	err := collection.FindOne(ctx, bson.M{"id": id}).Decode(&cocktail)
+	err := m.Collection.FindOne(ctx, bson.M{"id": id}).Decode(&cocktail)
 	if err != nil {
 		log.Fatal(err)
 		return nil, err

@@ -6,15 +6,19 @@ import (
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
-type UserRepository struct {
-	MC *mongo.Database
+type UserRepository interface {
+    GetUserByEmail(email string) (*models.User, error)
+    InsertUser(user *models.User) error
 }
 
-func (r *UserRepository) GetUserByEmail(email string) (*models.User, error){
-	collection := r.MC.Collection("users")
+type UserRepositoryMongo struct {
+	Collection *mongo.Collection
+}
+
+func (r *UserRepositoryMongo) GetUserByEmail(email string) (*models.User, error){
 	var user *models.User
 
-	err := collection.FindOne(nil, map[string]interface{}{"email": email}).Decode(&user)
+	err := r.Collection.FindOne(nil, map[string]interface{}{"email": email}).Decode(&user)
 	if err != nil {
 		return nil, err
 	}
@@ -22,10 +26,8 @@ func (r *UserRepository) GetUserByEmail(email string) (*models.User, error){
 	return user, nil
 }
 
- func (r *UserRepository) InsertUser(user *models.User) error{
-	collection := r.MC.Collection("users")
-	
-	_, err := collection.InsertOne(nil, user)
+ func (r *UserRepositoryMongo) InsertUser(user *models.User) error{
+	_, err := r.Collection.InsertOne(nil, user)
 	if err != nil {
 		return err
 	}

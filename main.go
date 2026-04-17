@@ -24,16 +24,16 @@ func main() {
 
 	db := repository.ConnectDB()
 
-	cocktailRepo := &repository.CocktailRepo{
-		MC: db,
+	cocktailRepo := &repository.CocktailRepositoryMongo{
+		Collection: db.Collection("cocktail_recipes"),
 	}
-	userRepo := &repository.UserRepository{
-		MC: db,
+	userRepo := &repository.UserRepositoryMongo{
+		Collection: db.Collection("cocktail_recipes"),
 	}
 
 	healthCheckHandler := &handlers.HealthCheckHandler{}
 	cocktailHandler := &handlers.CocktailHandler{
-		CocktailGetter: cocktailRepo,
+		CocktailRepository: cocktailRepo,
 	}
 	authHandler := &handlers.AuthHandler{UserRepository: userRepo}
 

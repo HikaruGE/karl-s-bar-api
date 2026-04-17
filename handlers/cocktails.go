@@ -1,23 +1,18 @@
 package handlers
 
 import (
-	"karl-s-bar-api/models"
+	"karl-s-bar-api/repository"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
 type CocktailHandler struct {
-	CocktailGetter CocktailGetter
-}
-
-type CocktailGetter interface {
-	GetCocktails() ([]models.Cocktail, error)
-	GetCocktailByID(id string) (*models.Cocktail, error)
+	CocktailRepository repository.CocktailRepository
 }
 
 func (h *CocktailHandler) GetCocktailsHandler(c *gin.Context) {
-	cocktails, err := h.CocktailGetter.GetCocktails()
+	cocktails, err := h.CocktailRepository.GetCocktails()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": "Failed to fetch cocktails",
@@ -31,7 +26,7 @@ func (h *CocktailHandler) GetCocktailsHandler(c *gin.Context) {
 
 func (h *CocktailHandler) GetCocktailByIDHandler(c *gin.Context) {
 	id := c.Param("id")
-	cocktail, err := h.CocktailGetter.GetCocktailByID(id)
+	cocktail, err := h.CocktailRepository.GetCocktailByID(id)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{
 			"error": "Cocktail not found",
