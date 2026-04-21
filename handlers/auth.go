@@ -9,6 +9,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
+	"go.mongodb.org/mongo-driver/v2/mongo"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -33,10 +34,16 @@ func (h *AuthHandler) Register(c *gin.Context) {
         return
     }
 
-    _,err:= h.UserRepository.GetUserByEmail(strings.ToLower(req.Email))
-    if (err == nil){
+    user,err:= h.UserRepository.GetUserByEmail(strings.ToLower(req.Email))
+    if (err != nil){
+        if (err != mongo.ErrNoDocuments) {
+            c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})  
+            return  
+        }
+    }
+    if user != nil {
         c.JSON(http.StatusBadRequest, gin.H{"error": "email already registered"})  
-        return      
+        return 
     }
 
     hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
@@ -45,14 +52,13 @@ func (h *AuthHandler) Register(c *gin.Context) {
         return
     }
 
-    user := models.User{
-        ID:        time.Now().String(),
-        Email:     req.Email,
+    user = &models.User{
+        Email:     strings.ToLower(req.Email),
         Password:  string(hashedPassword),
         CreatedAt: time.Now(),
     }
 
-    if err := h.UserRepository.InsertUser(&user); err != nil {
+    if err := h.UserRepository.InsertUser(user); err != nil {
         c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create user"})
     }
 
@@ -84,7 +90,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
         return
     }
 
-    token, err := generateJWT(user.ID)
+    token, err := generateJWT(user.ID.Hex())
     if err != nil {
         c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to generate token"})
         return

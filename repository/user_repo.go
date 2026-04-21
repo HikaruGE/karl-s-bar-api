@@ -1,8 +1,11 @@
 package repository
 
 import (
+	"context"
 	"karl-s-bar-api/models"
+	"time"
 
+	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
@@ -16,21 +19,26 @@ type UserRepositoryMongo struct {
 }
 
 func (r *UserRepositoryMongo) GetUserByEmail(email string) (*models.User, error){
-	var user *models.User
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 
-	err := r.Collection.FindOne(nil, map[string]interface{}{"email": email}).Decode(&user)
+	var user models.User
+	err := r.Collection.FindOne(ctx, bson.M{"email": email}).Decode(&user)
 	if err != nil {
 		return nil, err
 	}
 
-	return user, nil
+	return &user, nil
 }
 
- func (r *UserRepositoryMongo) InsertUser(user *models.User) error{
-	_, err := r.Collection.InsertOne(nil, user)
+func (r *UserRepositoryMongo) InsertUser(user *models.User) error{
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	_, err := r.Collection.InsertOne(ctx, user)
 	if err != nil {
 		return err
 	}
 
 	return nil
- }
+}

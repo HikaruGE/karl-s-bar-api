@@ -2,6 +2,7 @@ package main
 
 import (
 	"karl-s-bar-api/handlers"
+	middlewares "karl-s-bar-api/middleware"
 	"karl-s-bar-api/repository"
 
 	"github.com/gin-gonic/gin"
@@ -30,12 +31,16 @@ func main() {
 	userRepo := &repository.UserRepositoryMongo{
 		Collection: db.Collection("users"),
 	}
+	favoriteRepo := &repository.FavoriteRepositoryMongo{
+		Collection: db.Collection("favorites"),
+	}
 
 	healthCheckHandler := &handlers.HealthCheckHandler{}
 	cocktailHandler := &handlers.CocktailHandler{
 		CocktailRepository: cocktailRepo,
 	}
 	authHandler := &handlers.AuthHandler{UserRepository: userRepo}
+	favoriteHandler := &handlers.FavoriteHandler{FavoriteRepository: favoriteRepo}
 
 	r.GET("/cheers", healthCheckHandler.HealthCheck)
 	r.GET("/cocktails", cocktailHandler.GetCocktailsHandler)
@@ -44,8 +49,9 @@ func main() {
 	r.POST("/auth/register", authHandler.Register)
 	r.POST("/auth/login", authHandler.Login)
 
-// 	r.POST("/favorite", middlewares.AuthMiddleware(), favoriteHandler.Create)
-// r.POST("/comment", middlewares.AuthMiddleware(), commentHandler.Create)
+	r.POST("/favorite", middlewares.AuthMiddleware(), favoriteHandler.Create)
+	r.GET("/favorite", middlewares.AuthMiddleware(), favoriteHandler.List)
+	// r.POST("/comment", middlewares.AuthMiddleware(), commentHandler.Create)
 
 	r.Run(":9527")
 }
