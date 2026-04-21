@@ -44,5 +44,8 @@ func main() {
 	r.POST("/auth/register", authHandler.Register)
 	r.POST("/auth/login", authHandler.Login)
 
+// 	r.POST("/favorite", middlewares.AuthMiddleware(), favoriteHandler.Create)
+// r.POST("/comment", middlewares.AuthMiddleware(), commentHandler.Create)
+
 	r.Run(":9527")
 }
