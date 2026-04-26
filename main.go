@@ -10,16 +10,16 @@ import (
 
 func main() {
 	r := gin.Default()
-	r.Use(func (c *gin.Context)  {
+	r.Use(func(c *gin.Context) {
 		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
 		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 		c.Writer.Header().Set("Access-Control-Allow-Headers", "Origin, Content-Type, Authorization")
 
 		if c.Request.Method == "OPTIONS" {
 			c.AbortWithStatus(204)
-			return	
+			return
 		}
-		
+
 		c.Next()
 	})
 
@@ -31,16 +31,13 @@ func main() {
 	userRepo := &repository.UserRepositoryMongo{
 		Collection: db.Collection("users"),
 	}
-	favoriteRepo := &repository.FavoriteRepositoryMongo{
-		Collection: db.Collection("favorites"),
-	}
 
 	healthCheckHandler := &handlers.HealthCheckHandler{}
 	cocktailHandler := &handlers.CocktailHandler{
 		CocktailRepository: cocktailRepo,
 	}
 	authHandler := &handlers.AuthHandler{UserRepository: userRepo}
-	favoriteHandler := &handlers.FavoriteHandler{FavoriteRepository: favoriteRepo}
+	favoriteHandler := &handlers.FavoriteHandler{UserRepository: userRepo}
 
 	r.GET("/cheers", healthCheckHandler.HealthCheck)
 	r.GET("/cocktails", cocktailHandler.GetCocktailsHandler)

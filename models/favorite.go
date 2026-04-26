@@ -1,16 +1,14 @@
 package models
 
-import (
-	"time"
+import "time"
 
-	"go.mongodb.org/mongo-driver/v2/bson"
-)
-
-
-
+type FavoriteItem struct {
+	CocktailID string    `bson:"cocktailId" json:"cocktailId"`
+	CreatedAt  time.Time `bson:"createdAt" json:"createdAt"`
+}
 type Favorite struct {
-    ID         bson.ObjectID    `bson:"_id,omitempty" json:"id"`
-    UserID     string    `bson:"userId" json:"userId"`
-    CocktailID string    `bson:"cocktailId" json:"cocktailId"`
-    CreatedAt  time.Time `bson:"createdAt" json:"createdAt"`
+	ID         string    `bson:"_id,omitempty" json:"id"`
+	UserID     string    `bson:"userId" json:"userId"`
+	CocktailID string    `bson:"cocktailId" json:"cocktailId"`
+	CreatedAt  time.Time `bson:"createdAt" json:"createdAt"`
 }

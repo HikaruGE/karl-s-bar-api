@@ -3,68 +3,72 @@ package handlers
 import (
 	"karl-s-bar-api/models"
 	"karl-s-bar-api/repository"
+	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
 )
 
 type FavoriteHandler struct {
-    FavoriteRepository repository.FavoriteRepository
+	UserRepository repository.UserRepository
 }
 
 type CreateFavoriteRequest struct {
-    CocktailID string `json:"cocktailId"`
+	CocktailID string `json:"cocktailId"`
 }
 
 func (h *FavoriteHandler) Create(c *gin.Context) {
-    userId := c.GetString("userId")
+	userId := c.GetString("userId")
 
-    var req CreateFavoriteRequest
-    if err := c.ShouldBindJSON(&req); err != nil {
-        c.JSON(400, gin.H{"error": "invalid request"})
-        return
-    }
+	var req CreateFavoriteRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
+		return
+	}
 
-    exists, _ := h.FavoriteRepository.Exists(userId, req.CocktailID)
-    if exists {
-        c.JSON(400, gin.H{"error": "already favorited"})
-        return
-    }
+	exists, err := h.UserRepository.HasFavorite(userId, req.CocktailID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	if exists {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "already favorited"})
+		return
+	}
 
-    fav := models.Favorite{
-        UserID:     userId,
-        CocktailID: req.CocktailID,
-        CreatedAt:  time.Now(),
-    }
+	fav := models.FavoriteItem{
+		CocktailID: req.CocktailID,
+		CreatedAt:  time.Now(),
+	}
 
-    if err := h.FavoriteRepository.Create(&fav); err != nil {
-        c.JSON(500, gin.H{"error": "failed"})
-        return
-    }
+	if err := h.UserRepository.AddFavorite(userId, fav); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to add favorite"})
+		return
+	}
 
-    c.JSON(200, gin.H{"message": "ok"})
+	c.JSON(http.StatusOK, gin.H{"message": "ok"})
 }
 
 func (h *FavoriteHandler) List(c *gin.Context) {
-    userId := c.GetString("userId")
+	userId := c.GetString("userId")
 
-    favs, err := h.FavoriteRepository.GetByUser(userId)
-    if err != nil {
-        c.JSON(500, gin.H{"error": "failed"})
-        return
-    }
+	favs, err := h.UserRepository.GetFavorites(userId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed"})
+		return
+	}
 
-    c.JSON(200, favs)
+	c.JSON(http.StatusOK, favs)
 }
 
 func (h *FavoriteHandler) Delete(c *gin.Context) {
-    userId := c.GetString("userId")
-    cocktailId := c.Param("cocktailId")
+	userId := c.GetString("userId")
+	cocktailId := c.Param("cocktailId")
 
-    if err := h.FavoriteRepository.DeleteByUserAndCocktail(userId, cocktailId); err != nil {
-        c.JSON(500, gin.H{"error": "failed to delete favorite for cocktail " + cocktailId + "and user " + userId})
-        return
-    }
+	if err := h.UserRepository.RemoveFavorite(userId, cocktailId); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to delete favorite"})
+		return
+	}
 
-    c.JSON(200, gin.H{"message": "ok"})
+	c.JSON(http.StatusOK, gin.H{"message": "ok"})
 }
