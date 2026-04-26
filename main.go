@@ -51,6 +51,7 @@ func main() {
 
 	r.POST("/favorite", middlewares.AuthMiddleware(), favoriteHandler.Create)
 	r.GET("/favorite", middlewares.AuthMiddleware(), favoriteHandler.List)
+	r.DELETE("/favorite/:cocktailId", middlewares.AuthMiddleware(), favoriteHandler.Delete)
 	// r.POST("/comment", middlewares.AuthMiddleware(), commentHandler.Create)
 
 	r.Run(":9527")

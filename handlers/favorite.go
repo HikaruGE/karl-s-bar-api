@@ -56,3 +56,15 @@ func (h *FavoriteHandler) List(c *gin.Context) {
 
     c.JSON(200, favs)
 }
+
+func (h *FavoriteHandler) Delete(c *gin.Context) {
+    userId := c.GetString("userId")
+    cocktailId := c.Param("cocktailId")
+
+    if err := h.FavoriteRepository.DeleteByUserAndCocktail(userId, cocktailId); err != nil {
+        c.JSON(500, gin.H{"error": "failed to delete favorite for cocktail " + cocktailId + "and user " + userId})
+        return
+    }
+
+    c.JSON(200, gin.H{"message": "ok"})
+}

@@ -14,6 +14,7 @@ type FavoriteRepository interface {
     Create(f *models.Favorite) error
     Exists(userId, cocktailId string) (bool, error)
     GetByUser(userId string) ([]models.Favorite, error)
+    DeleteByUserAndCocktail(userId, cocktailId string) error
 }
 
 type FavoriteRepositoryMongo struct {
@@ -56,4 +57,16 @@ func (r *FavoriteRepositoryMongo) GetByUser(userId string) ([]models.Favorite, e
     }
 
     return results, nil
+}
+
+func (r *FavoriteRepositoryMongo) DeleteByUserAndCocktail(userId, cocktailId string) error {
+    ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+    defer cancel()
+
+    _, err := r.Collection.DeleteOne(ctx, bson.M{
+        "userId":     userId,
+        "cocktailId": cocktailId,
+    })
+
+    return err
 }
