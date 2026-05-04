@@ -1,0 +1,8 @@
+{
+  "chat.tools.terminal.autoApprove": {
+    "/^go build -o app main\\.go$/": {
+      "approve": true,
+      "matchCommandLine": true
+    }
+  }
+}

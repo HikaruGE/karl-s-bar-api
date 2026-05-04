@@ -31,6 +31,9 @@ func main() {
 	userRepo := &repository.UserRepositoryMongo{
 		Collection: db.Collection("users"),
 	}
+	commentRepo := &repository.CommentRepositoryMongo{
+		Collection: db.Collection("comments"),
+	}
 
 	healthCheckHandler := &handlers.HealthCheckHandler{}
 	cocktailHandler := &handlers.CocktailHandler{
@@ -38,6 +41,10 @@ func main() {
 	}
 	authHandler := &handlers.AuthHandler{UserRepository: userRepo}
 	favoriteHandler := &handlers.FavoriteHandler{UserRepository: userRepo}
+	commentHandler := &handlers.CommentHandler{
+		CommentRepository: commentRepo,
+		UserRepository:    userRepo,
+	}
 
 	r.GET("/cheers", healthCheckHandler.HealthCheck)
 	r.GET("/cocktails", cocktailHandler.GetCocktailsHandler)
@@ -49,7 +56,10 @@ func main() {
 	r.POST("/favorite", middlewares.AuthMiddleware(), favoriteHandler.Create)
 	r.GET("/favorite", middlewares.AuthMiddleware(), favoriteHandler.List)
 	r.DELETE("/favorite/:cocktailId", middlewares.AuthMiddleware(), favoriteHandler.Delete)
-	// r.POST("/comment", middlewares.AuthMiddleware(), commentHandler.Create)
+
+	r.POST("/cocktails/:id/comments", middlewares.AuthMiddleware(), commentHandler.CreateComment)
+	r.GET("/cocktails/:id/comments", commentHandler.GetComments)
+	r.DELETE("/comments/:commentID", middlewares.AuthMiddleware(), commentHandler.DeleteComment)
 
 	r.Run(":9527")
 }

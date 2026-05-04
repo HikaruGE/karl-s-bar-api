@@ -21,6 +21,10 @@
    - [添加收藏](#添加收藏)
    - [获取收藏列表](#获取收藏列表)
    - [删除收藏](#删除收藏)
+5. [评论相关](#评论相关)
+   - [添加评论](#添加评论)
+   - [获取评论列表](#获取评论列表)
+   - [删除评论](#删除评论)
 
 ---
 
@@ -406,6 +410,166 @@ curl -X DELETE http://localhost:9527/favorite/1 \
 
 - `200` - 删除成功
 - `401` - 未认证
+- `500` - 服务器错误
+
+---
+
+## 评论相关
+
+### 添加评论
+
+**端点**: `POST /cocktails/:id/comments`
+
+**描述**: 为指定的鸡尾酒添加评论
+
+**认证**: 是 (需要 JWT token)
+
+**请求头**:
+
+```
+Authorization: Bearer <token>
+```
+
+**路径参数**:
+
+- `id` (string, required) - 鸡尾酒 ID
+
+**请求体**:
+
+```json
+{
+  "content": "这是一款很棒的鸡尾酒！"
+}
+```
+
+**请求示例**:
+
+```bash
+curl -X POST http://localhost:9527/cocktails/1/comments \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "content": "这是一款很棒的鸡尾酒！"
+  }'
+```
+
+**响应示例** (成功):
+
+```json
+{
+  "id": "507f1f77bcf86cd799439011",
+  "cocktail_id": "1",
+  "user_id": "507f1f77bcf86cd799439012",
+  "user_name": "user@example.com",
+  "content": "这是一款很棒的鸡尾酒！",
+  "created_at": "2026-05-04T12:00:00Z"
+}
+```
+
+**状态码**:
+
+- `201` - 评论创建成功
+- `400` - 请求格式错误
+- `401` - 未认证
+- `500` - 服务器错误
+
+---
+
+### 获取评论列表
+
+**端点**: `GET /cocktails/:id/comments`
+
+**描述**: 获取指定鸡尾酒的所有评论
+
+**认证**: 否
+
+**路径参数**:
+
+- `id` (string, required) - 鸡尾酒 ID
+
+**请求示例**:
+
+```bash
+curl -X GET http://localhost:9527/cocktails/1/comments
+```
+
+**响应示例**:
+
+```json
+[
+  {
+    "id": "507f1f77bcf86cd799439011",
+    "cocktail_id": "1",
+    "user_id": "507f1f77bcf86cd799439012",
+    "user_name": "user@example.com",
+    "content": "这是一款很棒的鸡尾酒！",
+    "created_at": "2026-05-04T12:00:00Z"
+  },
+  {
+    "id": "507f1f77bcf86cd799439013",
+    "cocktail_id": "1",
+    "user_id": "507f1f77bcf86cd799439014",
+    "user_name": "another@example.com",
+    "content": "同意，口感很好！",
+    "created_at": "2026-05-04T12:05:00Z"
+  }
+]
+```
+
+**状态码**:
+
+- `200` - 获取成功
+- `400` - 无效的鸡尾酒 ID
+- `500` - 服务器错误
+
+---
+
+### 删除评论
+
+**端点**: `DELETE /comments/:commentID`
+
+**描述**: 删除指定的评论（只有评论作者可以删除）
+
+**认证**: 是 (需要 JWT token)
+
+**请求头**:
+
+```
+Authorization: Bearer <token>
+```
+
+**路径参数**:
+
+- `commentID` (string, required) - 评论 ID
+
+**请求示例**:
+
+```bash
+curl -X DELETE http://localhost:9527/comments/507f1f77bcf86cd799439011 \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+```
+
+**响应示例** (成功):
+
+```json
+{
+  "message": "Comment deleted successfully"
+}
+```
+
+**错误响应示例** (无权限):
+
+```json
+{
+  "error": "comment not found or not authorized"
+}
+```
+
+**状态码**:
+
+- `200` - 删除成功
+- `401` - 未认证
+- `403` - 无权限删除此评论
 - `500` - 服务器错误
 
 ---
