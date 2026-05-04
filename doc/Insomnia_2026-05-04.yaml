@@ -1,0 +1,339 @@
+type: collection.insomnia.rest/5.0
+schema_version: "5.1"
+name: cocktail-api
+meta:
+  id: wrk_54ec56e7aa004876baeaae9c31de34e5
+  created: 1777862722478
+  modified: 1777870067751
+  description: ""
+collection:
+  - url: "{{base_url}}/cheers"
+    name: cheers
+    meta:
+      id: req_27fc20df7e564fd29165401699c80f2b
+      created: 1777862722538
+      modified: 1777863185162
+      isPrivate: false
+      description: ""
+      sortKey: -1777862722538
+    method: GET
+    headers:
+      - name: User-Agent
+        value: insomnia/12.5.0
+        description: ""
+        disabled: false
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+  - url: "{{base_url}}/cocktails"
+    name: cocktails
+    meta:
+      id: req_26cea03dc4604732816cb72d8a086b9e
+      created: 1777862809928
+      modified: 1777869094581
+      isPrivate: false
+      description: ""
+      sortKey: -1777862809928
+    method: GET
+    headers:
+      - name: User-Agent
+        value: insomnia/12.5.0
+        description: ""
+        disabled: false
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+  - url: "{{base_url}}/auth/login"
+    name: login
+    meta:
+      id: req_d9632f03dde340f39247ee89b94f5c5b
+      created: 1777868205663
+      modified: 1777868913441
+      isPrivate: false
+      description: ""
+      sortKey: -1777868205663
+    method: POST
+    body:
+      mimeType: application/json
+      text: |-
+        {
+        	"email": "test@example.com",
+        	"password": "12345"
+        }
+    headers:
+      - name: Content-Type
+        value: application/json
+      - name: User-Agent
+        value: insomnia/12.5.0
+        description: ""
+        disabled: false
+    scripts:
+      afterResponse: |
+        const data = insomnia.response.json(); 
+        insomnia.environment.set("token", data.token);
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+  - url: "{{base_url}}/auth/register"
+    name: register
+    meta:
+      id: req_d5172a6c81e9479280c99055a634a1f0
+      created: 1777868427383
+      modified: 1777868470065
+      isPrivate: false
+      description: ""
+      sortKey: -1777868427383
+    method: POST
+    body:
+      mimeType: application/json
+      text: |-
+        {
+            "email": "test@example.com",
+            "password": "12345"
+        }
+    headers:
+      - name: Content-Type
+        value: application/json
+      - name: User-Agent
+        value: insomnia/12.5.0
+        description: ""
+        disabled: false
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+  - url: "{{base_url}}/favorite/"
+    name: favorite
+    meta:
+      id: req_17e0ef1c6aba4c87a2b6008e77833c2a
+      created: 1777868918856
+      modified: 1777869551429
+      isPrivate: false
+      description: ""
+      sortKey: -1777869137981.25
+    method: POST
+    body:
+      mimeType: application/json
+      text: |-
+        {
+            "cocktailId": "1"
+        }
+    headers:
+      - name: Content-Type
+        value: application/json
+      - name: User-Agent
+        value: insomnia/12.5.0
+        description: ""
+        disabled: false
+      - name: Authorization
+        value: Bearer {{token}}
+        description: ""
+        disabled: false
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+  - url: "{{base_url}}/favorite"
+    name: favorite
+    meta:
+      id: req_0146860adac74c0ba626d214da047b57
+      created: 1777869211023
+      modified: 1777869297451
+      isPrivate: false
+      description: ""
+      sortKey: -1777869211023
+    method: GET
+    headers:
+      - name: User-Agent
+        value: insomnia/12.5.0
+        description: ""
+        disabled: false
+      - name: Authorization
+        value: Bearer {{token}}
+        description: ""
+        disabled: false
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+  - url: "{{base_url}}/favorite/:id"
+    name: favorite
+    meta:
+      id: req_f4e6eaa1feb1417dbaff39e9888d3588
+      created: 1777869308398
+      modified: 1777869372696
+      isPrivate: false
+      description: ""
+      sortKey: -1777869064939.5
+    method: DELETE
+    headers:
+      - name: User-Agent
+        value: insomnia/12.5.0
+        description: ""
+        disabled: false
+      - name: Authorization
+        value: Bearer {{token}}
+        description: ""
+        disabled: false
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+    pathParameters:
+      - name: id
+        value: "1"
+  - url: "{{base_url}}/cocktails/:id/comments"
+    name: comment
+    meta:
+      id: req_1df201fb2b5942be931e891658e58487
+      created: 1777869508918
+      modified: 1777869623071
+      isPrivate: false
+      description: ""
+      sortKey: -1777868991897.75
+    method: GET
+    headers:
+      - name: User-Agent
+        value: insomnia/12.5.0
+        description: ""
+        disabled: false
+      - name: Authorization
+        value: Bearer {{token}}
+        description: ""
+        disabled: false
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+    pathParameters:
+      - name: id
+        value: 69db55b100d9c09ea3f0c8b7
+  - url: "{{base_url}}/cocktails/:id/comments"
+    name: comment
+    meta:
+      id: req_5203361e9d53464481aab8823c585c81
+      created: 1777869536304
+      modified: 1777869653695
+      isPrivate: false
+      description: ""
+      sortKey: -1777868955376.875
+    method: POST
+    body:
+      mimeType: application/json
+      text: |-
+        {
+          "content": "这是一款很棒的鸡尾酒！"
+        }
+    headers:
+      - name: Content-Type
+        value: application/json
+      - name: User-Agent
+        value: insomnia/12.5.0
+        description: ""
+        disabled: false
+      - name: Authorization
+        value: Bearer {{token}}
+        description: ""
+        disabled: false
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+    pathParameters:
+      - name: id
+        value: 69db55b100d9c09ea3f0c8b7
+  - url: "{{base_url}}/comments/:commentID"
+    name: comment
+    meta:
+      id: req_62171f7666404c4f8c0ec0800578392c
+      created: 1777869538054
+      modified: 1777869740696
+      isPrivate: false
+      description: ""
+      sortKey: -1777868937116.4375
+    method: DELETE
+    headers:
+      - name: User-Agent
+        value: insomnia/12.5.0
+        description: ""
+        disabled: false
+      - name: Authorization
+        value: Bearer {{token}}
+        description: ""
+        disabled: false
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+    pathParameters:
+      - name: commentID
+        value: 69f82356816341ea6f4e7a3e
+cookieJar:
+  name: Default Jar
+  meta:
+    id: jar_7cf5b376332a01c5f81e0701da683d4b1f098e09
+    created: 1777862722482
+    modified: 1777868914911
+environments:
+  name: Local Environment
+  meta:
+    id: env_7cf5b376332a01c5f81e0701da683d4b1f098e09
+    created: 1777862722480
+    modified: 1777868914913
+    isPrivate: false
+  data:
+    base_url: http://localhost:9527
+    token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3Nzc5NTUzMTQsInVzZXJJZCI6IjY5ZjgxZWNkODE2MzQxZWE2ZjRlN2EzZCJ9.X3ZppdEjFrgLgH0tBHwh0aYhZOUrZYmIBP1NdkcIFHA
+  subEnvironments:
+    - name: PROD Environment
+      meta:
+        id: env_0a5ff052658c49139cb06a06576782b0
+        created: 1777869864449
+        modified: 1777869924284
+        isPrivate: true
+        sortKey: 1777869864449
+      data:
+        base_url: https://wendy-lab.com/api
