@@ -3,7 +3,6 @@ package repository
 import (
 	"context"
 	"karl-s-bar-api/models"
-	"log"
 	"time"
 
 	"go.mongodb.org/mongo-driver/v2/bson"
@@ -25,14 +24,12 @@ func (m *CocktailRepositoryMongo) GetCocktails() ([]models.Cocktail, error) {
 
 	cursor, err := m.Collection.Find(ctx, bson.M{})
 	if err != nil {
-		log.Fatal(err)
 		return nil, err
 	}
 	defer cursor.Close(ctx)
 
 	var cocktails []models.Cocktail
 	if err = cursor.All(ctx, &cocktails); err != nil {
-		log.Fatal(err)
 		return nil, err
 	}
 
@@ -43,12 +40,16 @@ func (m *CocktailRepositoryMongo) GetCocktailByID(id string) (*models.Cocktail, 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	var cocktail *models.Cocktail
-	err := m.Collection.FindOne(ctx, bson.M{"id": id}).Decode(&cocktail)
+	objectID, err := bson.ObjectIDFromHex(id)
 	if err != nil {
-		log.Fatal(err)
 		return nil, err
 	}
 
-	return cocktail, nil
+	var cocktail models.Cocktail
+	err = m.Collection.FindOne(ctx, bson.M{"_id": objectID}).Decode(&cocktail)
+	if err != nil {
+		return nil, err
+	}
+
+	return &cocktail, nil
 }

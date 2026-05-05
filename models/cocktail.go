@@ -6,8 +6,7 @@ import (
 
 
 type Cocktail struct {
-	MongoID      bson.ObjectID `bson:"_id,omitempty" json:"-"`
-	ID           string             `bson:"id" json:"id"`
+	ID      	 bson.ObjectID 		`bson:"_id,omitempty" json:"id"`
 	Name         string             `bson:"name" json:"name"`
 	Category     string             `bson:"category" json:"category"`
 	Description  string             `bson:"description" json:"description"`

@@ -23,7 +23,10 @@ func main() {
 		c.Next()
 	})
 
-	db := repository.ConnectDB()
+	db, err := repository.ConnectDB()
+	if err != nil {
+		panic(err)
+	}
 
 	cocktailRepo := &repository.CocktailRepositoryMongo{
 		Collection: db.Collection("cocktail_recipes"),
