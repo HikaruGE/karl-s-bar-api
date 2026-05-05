@@ -11,7 +11,7 @@ import (
 
 type CocktailRepository interface {
 	GetCocktails() ([]models.Cocktail, error)
-	GetCocktailByID(id string) (*models.Cocktail, error)
+	GetCocktailByID(id bson.ObjectID) (*models.Cocktail, error)
 }
 
 type CocktailRepositoryMongo struct {
@@ -36,17 +36,12 @@ func (m *CocktailRepositoryMongo) GetCocktails() ([]models.Cocktail, error) {
 	return cocktails, nil
 }
 
-func (m *CocktailRepositoryMongo) GetCocktailByID(id string) (*models.Cocktail, error) {
+func (m *CocktailRepositoryMongo) GetCocktailByID(_id bson.ObjectID) (*models.Cocktail, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	objectID, err := bson.ObjectIDFromHex(id)
-	if err != nil {
-		return nil, err
-	}
-
 	var cocktail models.Cocktail
-	err = m.Collection.FindOne(ctx, bson.M{"_id": objectID}).Decode(&cocktail)
+	err := m.Collection.FindOne(ctx, bson.M{"_id": _id}).Decode(&cocktail)
 	if err != nil {
 		return nil, err
 	}

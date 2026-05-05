@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
 type CocktailHandler struct {
@@ -26,7 +27,14 @@ func (h *CocktailHandler) GetCocktailsHandler(c *gin.Context) {
 
 func (h *CocktailHandler) GetCocktailByIDHandler(c *gin.Context) {
 	id := c.Param("id")
-	cocktail, err := h.CocktailRepository.GetCocktailByID(id)
+	objectID, err := bson.ObjectIDFromHex(id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid cocktail ID",
+		})
+		return
+	}
+	cocktail, err := h.CocktailRepository.GetCocktailByID(objectID)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{
 			"error": "Cocktail not found",
