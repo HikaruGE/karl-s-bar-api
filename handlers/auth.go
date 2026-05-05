@@ -9,6 +9,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
+	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -118,6 +119,35 @@ func (h *AuthHandler) Login(c *gin.Context) {
 
     c.JSON(http.StatusOK, gin.H{
         "token": token,
+    })
+}
+
+func (h *AuthHandler) Profile(c *gin.Context) {
+    userIDStr := c.GetString("userId")
+    if userIDStr == "" {
+        c.JSON(http.StatusUnauthorized, gin.H{"error": "user not authenticated"})
+        return
+    }
+
+    userID, err := bson.ObjectIDFromHex(userIDStr)
+    if err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": "invalid user id"})
+        return
+    }
+
+    user, err := h.UserRepository.GetUserByID(userID)
+    if err != nil {
+        if err == mongo.ErrNoDocuments {
+            c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
+            return
+        }
+        c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to fetch user"})
+        return
+    }
+
+    c.JSON(http.StatusOK, gin.H{
+        "email": user.Email,
+        "name":  user.Name,
     })
 }
 

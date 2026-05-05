@@ -64,11 +64,13 @@ func main() {
 	}
 
 	r.GET("/cheers", healthCheckHandler.HealthCheck)
+
 	r.GET("/cocktails", cocktailHandler.GetCocktailsHandler)
 	r.GET("/cocktails/:id", cocktailHandler.GetCocktailByIDHandler)
 
 	r.POST("/auth/register", authHandler.Register)
 	r.POST("/auth/login", authHandler.Login)
+	r.GET("/auth/profile", middlewares.AuthMiddleware(), authHandler.Profile)
 
 	r.POST("/favorite", middlewares.AuthMiddleware(), favoriteHandler.Create)
 	r.GET("/favorite", middlewares.AuthMiddleware(), favoriteHandler.List)
