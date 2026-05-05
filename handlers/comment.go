@@ -12,8 +12,13 @@ import (
 )
 
 type CommentHandler struct {
-	CommentRepository repository.CommentRepository
-	UserRepository    repository.UserRepository
+	CommentRepository  repository.CommentRepository
+	UserRepository     repository.UserRepository
+	CommentValidator   CommentValidator
+}
+
+type CommentValidator interface {
+	ValidateCreateCommentRequest(content string) error
 }
 
 type CreateCommentRequest struct {
@@ -30,6 +35,12 @@ func (h *CommentHandler) CreateComment(c *gin.Context) {
 
 	var req CreateCommentRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Validate comment request
+	if err := h.CommentValidator.ValidateCreateCommentRequest(req.Content); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}

@@ -16,6 +16,7 @@ import (
 type RegisterRequest struct {
     Email    string `json:"email"`
     Password string `json:"password"`
+    Name     string `json:"name"`
 }
 
 type LoginRequest struct {
@@ -24,7 +25,19 @@ type LoginRequest struct {
 }
 
 type AuthHandler struct {  
-    UserRepository repository.UserRepository
+	UserRepository       repository.UserRepository
+	RegisterValidator    RegisterValidator
+	LoginValidator       LoginValidator
+}
+
+// RegisterValidator validates register requests
+type RegisterValidator interface {
+	ValidateRegisterRequest(email, password, name string) error
+}
+
+// LoginValidator validates login requests
+type LoginValidator interface {
+	ValidateLoginRequest(email, password string) error
 }
 
 func (h *AuthHandler) Register(c *gin.Context) {
@@ -34,16 +47,10 @@ func (h *AuthHandler) Register(c *gin.Context) {
         return
     }
 
-    user,err:= h.UserRepository.GetUserByEmail(strings.ToLower(req.Email))
-    if (err != nil){
-        if (err != mongo.ErrNoDocuments) {
-            c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})  
-            return  
-        }
-    }
-    if user != nil {
-        c.JSON(http.StatusBadRequest, gin.H{"error": "email already registered"})  
-        return 
+    // Validate register request
+	if err := h.RegisterValidator.ValidateRegisterRequest(req.Email, req.Password, req.Name); err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        return
     }
 
     hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
@@ -52,14 +59,21 @@ func (h *AuthHandler) Register(c *gin.Context) {
         return
     }
 
-    user = &models.User{
+    user := &models.User{
         Email:     strings.ToLower(req.Email),
+        Name:      req.Name,
         Password:  string(hashedPassword),
         CreatedAt: time.Now(),
     }
 
     if err := h.UserRepository.InsertUser(user); err != nil {
+        // Check if it's a duplicate key error (email already exists)
+        if mongo.IsDuplicateKeyError(err) {
+            c.JSON(http.StatusBadRequest, gin.H{"error": "email already registered"})
+            return
+        }
         c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create user"})
+        return
     }
 
     c.JSON(http.StatusOK, gin.H{
@@ -73,6 +87,12 @@ func (h *AuthHandler) Login(c *gin.Context) {
 
     if err := c.ShouldBindJSON(&req); err != nil {
         c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
+        return
+    }
+
+    // Validate login request
+	if err := h.LoginValidator.ValidateLoginRequest(req.Email, req.Password); err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
         return
     }
 

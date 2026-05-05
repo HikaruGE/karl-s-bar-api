@@ -10,7 +10,13 @@ import (
 )
 
 type FavoriteHandler struct {
-	UserRepository repository.UserRepository
+	UserRepository    repository.UserRepository
+	FavoriteValidator FavoriteValidator
+}
+
+type FavoriteValidator interface {
+	ValidateCreateFavoriteRequest(cocktailID string) error
+	ValidateDeleteFavoriteRequest(cocktailID string) error
 }
 
 type CreateFavoriteRequest struct {
@@ -23,6 +29,12 @@ func (h *FavoriteHandler) Create(c *gin.Context) {
 	var req CreateFavoriteRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
+		return
+	}
+
+	// Validate favorite request
+	if err := h.FavoriteValidator.ValidateCreateFavoriteRequest(req.CocktailID); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -64,6 +76,12 @@ func (h *FavoriteHandler) List(c *gin.Context) {
 func (h *FavoriteHandler) Delete(c *gin.Context) {
 	userId := c.GetString("userId")
 	cocktailId := c.Param("cocktailId")
+
+	// Validate cocktailId
+	if err := h.FavoriteValidator.ValidateDeleteFavoriteRequest(cocktailId); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
 
 	if err := h.UserRepository.RemoveFavorite(userId, cocktailId); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to delete favorite"})

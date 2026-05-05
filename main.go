@@ -4,6 +4,7 @@ import (
 	"karl-s-bar-api/handlers"
 	middlewares "karl-s-bar-api/middleware"
 	"karl-s-bar-api/repository"
+	"karl-s-bar-api/validators"
 
 	"github.com/gin-gonic/gin"
 )
@@ -28,6 +29,11 @@ func main() {
 		panic(err)
 	}
 
+	// Create database indexes
+	if err := repository.CreateIndexes(db); err != nil {
+		panic(err)
+	}
+
 	cocktailRepo := &repository.CocktailRepositoryMongo{
 		Collection: db.Collection("cocktail_recipes"),
 	}
@@ -42,11 +48,19 @@ func main() {
 	cocktailHandler := &handlers.CocktailHandler{
 		CocktailRepository: cocktailRepo,
 	}
-	authHandler := &handlers.AuthHandler{UserRepository: userRepo}
-	favoriteHandler := &handlers.FavoriteHandler{UserRepository: userRepo}
+	authHandler := &handlers.AuthHandler{
+		UserRepository:    userRepo,
+		RegisterValidator: &validators.RegisterValidatorImpl{},
+		LoginValidator:    &validators.LoginValidatorImpl{},
+	}
+	favoriteHandler := &handlers.FavoriteHandler{
+		UserRepository:    userRepo,
+		FavoriteValidator: &validators.FavoriteValidatorImpl{},
+	}
 	commentHandler := &handlers.CommentHandler{
 		CommentRepository: commentRepo,
 		UserRepository:    userRepo,
+		CommentValidator:  &validators.CommentValidatorImpl{},
 	}
 
 	r.GET("/cheers", healthCheckHandler.HealthCheck)

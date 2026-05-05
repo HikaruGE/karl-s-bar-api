@@ -3,6 +3,7 @@
     "/^go build -o app main\\.go$/": {
       "approve": true,
       "matchCommandLine": true
-    }
+    },
+    "go": true
   }
 }

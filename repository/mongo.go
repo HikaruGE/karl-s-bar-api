@@ -5,6 +5,7 @@ import (
 	"os"
 	"time"
 
+	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
@@ -25,4 +26,22 @@ func ConnectDB() (*mongo.Database, error) {
 
 	db := client.Database("cocktail_db")
 	return db, nil
+}
+
+// CreateIndexes creates necessary indexes for the database
+func CreateIndexes(db *mongo.Database) error {
+	// Create unique index for user email
+	usersCollection := db.Collection("users")
+	emailIndexModel := mongo.IndexModel{
+		Keys: bson.D{
+			{Key: "email", Value: 1},
+		},
+		Options: options.Index().SetUnique(true),
+	}
+	_, err := usersCollection.Indexes().CreateOne(context.Background(), emailIndexModel)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
