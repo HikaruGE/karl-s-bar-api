@@ -9,7 +9,7 @@ type RegisterValidatorImpl struct {
 }
 
 // ValidateRegisterRequest validates register request with format validation only
-func (v *RegisterValidatorImpl) ValidateRegisterRequest(email, password, name string) error {
+func (v *RegisterValidatorImpl) ValidateRegisterRequest(email, password, nickname string) error {
 	// Format validation only - business logic check is handled by database unique constraint
 	if err := ValidateEmail(email); err != nil {
 		return err
@@ -19,11 +19,11 @@ func (v *RegisterValidatorImpl) ValidateRegisterRequest(email, password, name st
 		return err
 	}
 
-	if err := ValidateNonEmpty(name, "name"); err != nil {
+	if err := ValidateNonEmpty(nickname, "nickname"); err != nil {
 		return err
 	}
 
-	if err := ValidateStringLength(name, "name", 1, 50); err != nil {
+	if err := ValidateStringLength(nickname, "nickname", 1, 50); err != nil {
 		return err
 	}
 

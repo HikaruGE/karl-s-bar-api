@@ -43,5 +43,15 @@ func CreateIndexes(db *mongo.Database) error {
 		return err
 	}
 
+	verificationTokenIndexModel := mongo.IndexModel{
+		Keys: bson.D{
+			{Key: "verificationToken", Value: 1},
+		},
+	}
+	_, err = usersCollection.Indexes().CreateOne(context.Background(), verificationTokenIndexModel)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }

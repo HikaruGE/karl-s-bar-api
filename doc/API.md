@@ -8,6 +8,18 @@
 
 ---
 
+## 环境变量说明
+
+- `MONGO_URI` - MongoDB 连接字符串
+- `SMTP_HOST` - Gmail SMTP 服务器，例如 `smtp.gmail.com`
+- `SMTP_PORT` - SMTP 端口，默认 `587`
+- `SMTP_USER` - SMTP 登录用户名，一般是完整 Gmail 地址
+- `SMTP_PASS` - SMTP 密码或 Gmail App Password
+- `MAIL_FROM` - 发件人邮箱地址（建议与 `SMTP_USER` 一致）
+- `APP_BASE_URL` - 服务器基础地址，用于构造验证链接，默认 `http://localhost:9527`
+
+---
+
 ## 目录
 
 1. [健康检查](#健康检查)
@@ -176,7 +188,8 @@ curl -X GET http://localhost:9527/cocktails/1
 ```json
 {
   "email": "user@example.com",
-  "password": "password123"
+  "password": "password123",
+  "nickname": "displayName"
 }
 ```
 
@@ -187,7 +200,8 @@ curl -X POST http://localhost:9527/auth/register \
   -H "Content-Type: application/json" \
   -d '{
     "email": "test@example.com",
-    "password": "password123"
+    "password": "password123",
+    "nickname": "tester"
   }'
 ```
 
@@ -195,7 +209,7 @@ curl -X POST http://localhost:9527/auth/register \
 
 ```json
 {
-  "message": "user created",
+  "message": "user created, verification email sent",
   "email": "test@example.com"
 }
 ```
@@ -210,8 +224,98 @@ curl -X POST http://localhost:9527/auth/register \
 
 **状态码**:
 
-- `200` - 注册成功
+- `200` - 注册成功，已发送验证邮件
 - `400` - 邮箱已注册或请求格式错误
+- `500` - 服务器错误
+
+---
+
+### 邮箱验证
+
+**端点**: `GET /auth/verify`
+
+**描述**: 根据邮箱验证链接激活用户账号
+
+**认证**: 否
+
+**查询参数**:
+
+- `token` (string, required) - 验证令牌
+
+**请求示例**:
+
+```bash
+curl -X GET "http://localhost:9527/auth/verify?token=YOUR_TOKEN"
+```
+
+**响应示例** (成功):
+
+```json
+{
+  "message": "email verified successfully"
+}
+```
+
+**错误响应示例**:
+
+```json
+{
+  "error": "invalid or expired token"
+}
+```
+
+**状态码**:
+
+- `200` - 验证成功
+- `400` - token 无效或已过期
+- `500` - 服务器错误
+
+---
+
+### 重发验证邮件
+
+**端点**: `POST /auth/resend-verification`
+
+**描述**: 当用户未收到验证邮件时，重新发送验证邮件
+
+**认证**: 否
+
+**请求体**:
+
+```json
+{
+  "email": "user@example.com"
+}
+```
+
+**请求示例**:
+
+```bash
+curl -X POST http://localhost:9527/auth/resend-verification \
+  -H "Content-Type: application/json" \
+  -d '{"email":"test@example.com"}'
+```
+
+**响应示例** (成功):
+
+```json
+{
+  "message": "verification email resent"
+}
+```
+
+**错误响应示例**:
+
+```json
+{
+  "error": "email already verified"
+}
+```
+
+**状态码**:
+
+- `200` - 邮件已重新发送
+- `400` - 请求格式错误或邮箱已验证
 - `500` - 服务器错误
 
 ---
@@ -265,6 +369,45 @@ curl -X POST http://localhost:9527/auth/login \
 - `200` - 登录成功
 - `400` - 请求格式错误
 - `401` - 邮箱或密码错误
+- `500` - 服务器错误
+
+---
+
+### 获取用户信息（Profile）
+
+**端点**: `GET /auth/profile`
+
+**描述**: 返回当前已认证用户的邮箱和显示昵称（`nickname`）
+
+**认证**: 是 (需要 JWT token)
+
+**请求头**:
+
+```
+Authorization: Bearer <token>
+```
+
+**请求示例**:
+
+```bash
+curl -X GET http://localhost:9527/auth/profile \
+  -H "Authorization: Bearer <token>"
+```
+
+**响应示例** (成功):
+
+```json
+{
+  "email": "test@example.com",
+  "nickname": "tester"
+}
+```
+
+**状态码**:
+
+- `200` - 获取成功
+- `401` - 未认证或 token 无效
+- `404` - 用户不存在
 - `500` - 服务器错误
 
 ---
@@ -460,7 +603,7 @@ curl -X POST http://localhost:9527/cocktails/1/comments \
   "id": "507f1f77bcf86cd799439011",
   "cocktail_id": "1",
   "user_id": "507f1f77bcf86cd799439012",
-  "user_name": "user@example.com",
+  "user_name": "cool_tester",
   "content": "这是一款很棒的鸡尾酒！",
   "created_at": "2026-05-04T12:00:00Z"
 }
@@ -501,7 +644,7 @@ curl -X GET http://localhost:9527/cocktails/1/comments
     "id": "507f1f77bcf86cd799439011",
     "cocktail_id": "1",
     "user_id": "507f1f77bcf86cd799439012",
-    "user_name": "user@example.com",
+    "user_name": "cool_tester",
     "content": "这是一款很棒的鸡尾酒！",
     "created_at": "2026-05-04T12:00:00Z"
   },
@@ -509,7 +652,7 @@ curl -X GET http://localhost:9527/cocktails/1/comments
     "id": "507f1f77bcf86cd799439013",
     "cocktail_id": "1",
     "user_id": "507f1f77bcf86cd799439014",
-    "user_name": "another@example.com",
+    "user_name": "another_guy",
     "content": "同意，口感很好！",
     "created_at": "2026-05-04T12:05:00Z"
   }

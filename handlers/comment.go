@@ -63,7 +63,7 @@ func (h *CommentHandler) CreateComment(c *gin.Context) {
 	comment := &models.Comment{
 		CocktailID: cocktailID,
 		UserID:     userID,
-		UserName:   user.Email, // Use email as username
+		UserName:   user.Nickname, // Use nickname as username for display
 		Content:    req.Content,
 		CreatedAt:  time.Now(),
 	}

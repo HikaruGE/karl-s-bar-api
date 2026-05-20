@@ -11,8 +11,11 @@ import (
 
 type UserRepository interface {
 	GetUserByEmail(email string) (*models.User, error)
+	GetUserByVerificationToken(token string) (*models.User, error)
 	GetUserByID(id bson.ObjectID) (*models.User, error)
 	InsertUser(user *models.User) error
+	UpdateVerificationToken(userID bson.ObjectID, token string, expiry time.Time) error
+	MarkUserVerified(userID bson.ObjectID) error
 	HasFavorite(userID, cocktailID string) (bool, error)
 	AddFavorite(userID string, favorite models.FavoriteItem) error
 	RemoveFavorite(userID, cocktailID string) error
@@ -29,6 +32,19 @@ func (r *UserRepositoryMongo) GetUserByEmail(email string) (*models.User, error)
 
 	var user models.User
 	err := r.Collection.FindOne(ctx, bson.M{"email": email}).Decode(&user)
+	if err != nil {
+		return nil, err
+	}
+
+	return &user, nil
+}
+
+func (r *UserRepositoryMongo) GetUserByVerificationToken(token string) (*models.User, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	var user models.User
+	err := r.Collection.FindOne(ctx, bson.M{"verificationToken": token}).Decode(&user)
 	if err != nil {
 		return nil, err
 	}
@@ -54,6 +70,28 @@ func (r *UserRepositoryMongo) InsertUser(user *models.User) error {
 	defer cancel()
 
 	_, err := r.Collection.InsertOne(ctx, user)
+	return err
+}
+
+func (r *UserRepositoryMongo) UpdateVerificationToken(userID bson.ObjectID, token string, expiry time.Time) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	_, err := r.Collection.UpdateOne(ctx,
+		bson.M{"_id": userID},
+		bson.M{"$set": bson.M{"verificationToken": token, "verificationTokenExpiry": expiry}},
+	)
+	return err
+}
+
+func (r *UserRepositoryMongo) MarkUserVerified(userID bson.ObjectID) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	_, err := r.Collection.UpdateOne(ctx,
+		bson.M{"_id": userID},
+		bson.M{"$set": bson.M{"verified": true}, "$unset": bson.M{"verificationToken": "", "verificationTokenExpiry": ""}},
+	)
 	return err
 }
 
